@@ -71,7 +71,7 @@ public class OrderDinnerServiceImpl implements IOrderDinnerService {
 	private void orderBySex(List<Object[]> clients) {
 		Map<Boolean, List<Object[]>> clientsOrderSex = clients.stream().collect(Collectors.groupingBy(orderBySex()));
 		if (clientsOrderSex.size() == 2 && (clientsOrderSex.get(true).size() != clientsOrderSex.get(false).size())) {
-			calculateOrderBySex(clientsOrderSex);
+			calculateOrderBySex(clientsOrderSex.get(true), clientsOrderSex.get(false));
 		}
 	}
 
@@ -81,17 +81,11 @@ public class OrderDinnerServiceImpl implements IOrderDinnerService {
 	 * 
 	 * @param clientes
 	 */
-	private void calculateOrderBySex(Map<Boolean, List<Object[]>> clientes) {
-		BigDecimal totalMale = clientes.get(true).stream().map(data -> (BigDecimal) data[1]).reduce(BigDecimal.ZERO,
-				BigDecimal::add);
-		BigDecimal totalFemale = clientes.get(false).stream().map(data -> (BigDecimal) data[1]).reduce(BigDecimal.ZERO,
-				BigDecimal::add);
-		if (totalMale.compareTo(totalFemale) > 0) {
-			logger.info("¡Mujeres eliminadas!");
-			this.clients.removeAll(clientes.get(false));
+	private void calculateOrderBySex(List<Object[]> clientsMale, List<Object[]> clientsFemale) {
+		if(clientsMale.size() > clientsFemale.size()) {
+			this.clients.remove(clientsMale.get(clientsMale.size() - 1));	
 		} else {
-			logger.info("¡Hombres eliminadas!");
-			this.clients.removeAll(clientes.get(true));
+			this.clients.remove(clientsFemale.get(clientsFemale.size() -1 ));
 		}
 		replaceClients();
 		orderIfEqualCompany(this.clients);
